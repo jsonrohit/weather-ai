@@ -1,0 +1,37 @@
+# === Environment Variables / Secrets ===
+# Crucial: Never commit your Google API keys
+.env
+.env.local
+.env.*.local
+
+# === Python Virtual Environments ===
+venv/
+.venv/
+env/
+ENV/
+pyvenv.cfg
+
+# === Python Cache and Compiled Files ===
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# === LangChain / Vector Database Local Storage ===
+# If you are testing vector stores locally (like Chroma, FAISS, or LanceDB)
+.chroma/
+faidx/
+*.db
+*.sqlite
+
+# === IDEs and System Files ===
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# audio Files
+*.wav
+*.mp3
