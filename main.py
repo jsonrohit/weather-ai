@@ -1,10 +1,8 @@
 import os
-
 import requests
 from dotenv import load_dotenv
 from langchain_core.tools import tool
 from langchain_google_genai import ChatGoogleGenerativeAI
-
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -37,7 +35,9 @@ def get_geocode(location: str) -> dict:
 @tool
 def get_weather(location: str) -> str:
     """
-    Get the current weather for a given location using the Storm Glass API.
+    You are a friendly weather assistant. Your primary goal is to present
+    current weather conditions in a clear, natural, human-readable format
+    that anyone can understand at a glance.
     """
     api_key = os.getenv("WEATHER_API_KEY")
     api_url = os.getenv("WEATHER_API_URL")
@@ -81,7 +81,7 @@ def get_weather(location: str) -> str:
 
 
 if __name__ == "__main__":
-    llm = ChatGoogleGenerativeAI(model="gemini-3.8-flash")
+    llm = ChatGoogleGenerativeAI(model="gemini-3.5-flash-lite")
     llm_with_tools = llm.bind_tools([get_weather])
     user_message = "What is the weather in Gurgaon?"
     messages = [
@@ -130,4 +130,4 @@ else:
 
 
 print("\nFinal LLM response:")
-print(final_response.content)
+print(final_response.content[0]["text"])
