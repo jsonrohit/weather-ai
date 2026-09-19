@@ -3,6 +3,7 @@ import requests
 from dotenv import load_dotenv
 from langchain_core.tools import tool
 from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.messages import ToolMessage
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -80,54 +81,64 @@ def get_weather(location: str) -> str:
     return f"No weather data available for {location}."
 
 
-if __name__ == "__main__":
+def main():
     llm = ChatGoogleGenerativeAI(model="gemini-3.5-flash-lite")
     llm_with_tools = llm.bind_tools([get_weather])
-    user_message = "What is the weather in Gurgaon?"
+    user_message = input("Enter your city to get weather information: ")
     messages = [
         ("user", user_message)
     ]
     response = llm_with_tools.invoke(messages)
 
-print("Tool calls:")
-print(response.tool_calls)
-
-
-# --------------------------------------------------
-# Execute tool calls
-# --------------------------------------------------
-
-if response.tool_calls:
-
-    messages.append(response)
-
-    for tool_call in response.tool_calls:
-
-        if tool_call["name"] == "get_weather":
-            print(f"\nExecuting tool call: {tool_call['name']} with args: {tool_call['args']['location']}")
-            tool_result = get_weather.invoke('gurgaon')
-
-            print("\nTool result:")
-            print(tool_result)
-
-            messages.append(
-                {
-                    "role": "tool",
-                    "content": tool_result,
-                    "tool_call_id": tool_call["id"],
-                }
-            )
+    print("Tool calls:")
+    print(response.tool_calls)
 
 
     # --------------------------------------------------
-    # Send tool result back to Gemini
+    # Execute tool calls
     # --------------------------------------------------
 
-    final_response = llm_with_tools.invoke(messages)
+    if response.tool_calls:
 
-else:
-    final_response = response
+        messages.append(response)
+
+        for tool_call in response.tool_calls:
+
+            if tool_call["name"] == "get_weather":
+                print(f"\nExecuting tool call: {tool_call['name']} with args: {tool_call['args']['location']}")
+                tool_result = get_weather.invoke(tool_call['args'])
+
+                print("\nTool result:")
+                print(tool_result)
+
+                messages.append(
+                    ToolMessage(
+                        content=tool_result,
+                        tool_call_id=tool_call["id"],
+                    )
+                )
 
 
-print("\nFinal LLM response:")
-print(final_response.content[0]["text"])
+        # --------------------------------------------------
+        # Send tool result back to Gemini
+        # --------------------------------------------------
+
+        final_response = llm_with_tools.invoke(messages)
+
+    else:
+        final_response = response
+
+
+    print("\nFinal LLM response:")
+    content = final_response.content
+    if isinstance(content, str):
+        print(content)
+    else:
+        print("".join(
+            block.get("text", "")
+            for block in content
+            if isinstance(block, dict)
+        ))
+    
+if __name__ == "__main__":
+    main()
