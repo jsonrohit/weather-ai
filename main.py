@@ -92,8 +92,6 @@ def main():
 
     print("Tool calls:")
     print(response.tool_calls)
-
-
     # --------------------------------------------------
     # Execute tool calls
     # --------------------------------------------------
